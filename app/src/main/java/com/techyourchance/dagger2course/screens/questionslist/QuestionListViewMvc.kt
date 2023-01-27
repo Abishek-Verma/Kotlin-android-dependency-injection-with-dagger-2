@@ -11,10 +11,18 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.techyourchance.dagger2course.R
 import com.techyourchance.dagger2course.questions.Question
+import com.techyourchance.dagger2course.screens.common.viewmvc.BaseViewMvc
 import java.util.ArrayList
 
 //? Holds the UI logic of QuestionListActivity
-class QuestionListViewMvc(private val layoutInflater: LayoutInflater, private val parent: ViewGroup?) {
+class QuestionListViewMvc(
+    layoutInflater: LayoutInflater,
+    parent: ViewGroup?):
+    BaseViewMvc<QuestionListViewMvc.Listener>(
+    layoutInflater,
+    parent,
+    R.layout.layout_questions_list
+) {
 
     //. Implementing observer pattern
     interface Listener{
@@ -25,10 +33,6 @@ class QuestionListViewMvc(private val layoutInflater: LayoutInflater, private va
     private val swipeRefresh: SwipeRefreshLayout
     private val recyclerView: RecyclerView
     private val questionsAdapter: QuestionsAdapter
-
-    val rootView: View = layoutInflater.inflate(R.layout.layout_questions_list, parent,false)
-    private val context: Context get() = rootView.context
-    private val listeners = HashSet<Listener>()
 
     //. Called after constructor of the class is called
     //* Called everytime when object is created
@@ -64,19 +68,6 @@ class QuestionListViewMvc(private val layoutInflater: LayoutInflater, private va
         if (swipeRefresh.isRefreshing) {
             swipeRefresh.isRefreshing = false
         }
-    }
-
-    //. Easy access of findViewById without putting rootView. everytime
-    private fun<T : View?> findViewById(@IdRes id: Int): T {
-        return rootView.findViewById<T>(id)
-    }
-
-    fun registerListener(listener: Listener){
-        listeners.add(listener)
-    }
-
-    fun unRegisterListener(listener: Listener){
-        listeners.remove(listener)
     }
 
     //? ---------------- Adapter Class ------------------
