@@ -15,6 +15,7 @@ import com.techyourchance.dagger2course.R
 import com.techyourchance.dagger2course.networking.StackoverflowApi
 import com.techyourchance.dagger2course.questions.FetchQuestionsUseCase
 import com.techyourchance.dagger2course.questions.Question
+import com.techyourchance.dagger2course.screens.common.ScreenNavigator
 import com.techyourchance.dagger2course.screens.common.dialogs.DialogNavigator
 import com.techyourchance.dagger2course.screens.common.dialogs.ServerErrorDialogFragment
 import com.techyourchance.dagger2course.screens.questiondetails.QuestionDetailsActivity
@@ -27,11 +28,11 @@ class QuestionsListActivity : AppCompatActivity(), QuestionListViewMvc.Listener 
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    private lateinit var stackoverflowApi: StackoverflowApi
     private var isDataLoaded = false
     private lateinit var viewMvc: QuestionListViewMvc
     private lateinit var fetchQuestionsUseCase: FetchQuestionsUseCase
     private lateinit var dialogsNavigator: DialogNavigator
+    private lateinit var screenNavigator: ScreenNavigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +46,8 @@ class QuestionsListActivity : AppCompatActivity(), QuestionListViewMvc.Listener 
         fetchQuestionsUseCase = FetchQuestionsUseCase()
 
         dialogsNavigator = DialogNavigator(supportFragmentManager)
+
+        screenNavigator = ScreenNavigator(this)
     }
 
     override fun onStart() {
@@ -88,6 +91,6 @@ class QuestionsListActivity : AppCompatActivity(), QuestionListViewMvc.Listener 
     }
 
     override fun onQuestionCLicked(clickedQuestion: Question) {
-        QuestionDetailsActivity.start(this, clickedQuestion.id)
+        screenNavigator.toQuestionDetails(clickedQuestion.id)
     }
 }
