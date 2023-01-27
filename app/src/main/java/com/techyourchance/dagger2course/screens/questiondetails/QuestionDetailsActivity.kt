@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.techyourchance.dagger2course.Constants
 import com.techyourchance.dagger2course.networking.StackoverflowApi
 import com.techyourchance.dagger2course.questions.FetchQuestionsUseCase
+import com.techyourchance.dagger2course.screens.common.dialogs.DialogNavigator
 import com.techyourchance.dagger2course.screens.common.dialogs.ServerErrorDialogFragment
 import kotlinx.coroutines.*
 import retrofit2.Retrofit
@@ -20,6 +21,7 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
     private lateinit var stackoverflowApi: StackoverflowApi
     private lateinit var viewDetailMvc: QuestionDetailsViewMvc
     private lateinit var fetchQuestionsUseCase: FetchQuestionsUseCase
+    private lateinit var dialogNavigator: DialogNavigator
 
     private lateinit var questionId: String
 
@@ -30,6 +32,7 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
         setContentView(viewDetailMvc.rootView)
 
         fetchQuestionsUseCase = FetchQuestionsUseCase()
+        dialogNavigator = DialogNavigator(supportFragmentManager)
 
         // retrieve question ID passed from outside
         questionId = intent.extras!!.getString(EXTRA_QUESTION_ID)!!
@@ -56,6 +59,8 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
                     is FetchQuestionsUseCase.ResultDetail.Success ->{
                         viewDetailMvc.updateUI(result.questionDetail)
                     }
+
+                    is FetchQuestionsUseCase.ResultDetail.Failure -> onFetchFailed()
                 }
             }finally {
              viewDetailMvc.hideProgressIndication()
@@ -64,9 +69,7 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
     }
 
     private fun onFetchFailed() {
-        supportFragmentManager.beginTransaction()
-                .add(ServerErrorDialogFragment.newInstance(), null)
-                .commitAllowingStateLoss()
+       dialogNavigator.showServerErrorDialog()
     }
 
     companion object {
