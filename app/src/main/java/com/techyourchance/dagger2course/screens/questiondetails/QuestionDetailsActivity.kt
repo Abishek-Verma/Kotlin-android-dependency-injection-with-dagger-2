@@ -2,19 +2,13 @@ package com.techyourchance.dagger2course.screens.questiondetails
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.text.Html
 import android.view.LayoutInflater
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.techyourchance.dagger2course.Constants
-import com.techyourchance.dagger2course.R
 import com.techyourchance.dagger2course.networking.StackoverflowApi
+import com.techyourchance.dagger2course.questions.FetchQuestionsUseCase
 import com.techyourchance.dagger2course.screens.common.dialogs.ServerErrorDialogFragment
-import com.techyourchance.dagger2course.screens.common.toolbar.MyToolbar
-import com.techyourchance.dagger2course.screens.questionslist.QuestionListViewMvc
 import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -25,6 +19,7 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
 
     private lateinit var stackoverflowApi: StackoverflowApi
     private lateinit var viewDetailMvc: QuestionDetailsViewMvc
+    private lateinit var fetchQuestionsUseCase: FetchQuestionsUseCase
 
     private lateinit var questionId: String
 
@@ -34,12 +29,7 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
 
         setContentView(viewDetailMvc.rootView)
 
-        // init retrofit
-        val retrofit = Retrofit.Builder()
-                .baseUrl(Constants.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-        stackoverflowApi = retrofit.create(StackoverflowApi::class.java)
+        fetchQuestionsUseCase = FetchQuestionsUseCase()
 
         // retrieve question ID passed from outside
         questionId = intent.extras!!.getString(EXTRA_QUESTION_ID)!!
@@ -48,7 +38,7 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
     override fun onStart() {
         super.onStart()
         viewDetailMvc.registerListener(this)
-        fetchQuestionDetails()
+        fetchQuestionDetails(questionId)
     }
 
     override fun onStop() {
@@ -57,25 +47,19 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
         coroutineScope.coroutineContext.cancelChildren()
     }
 
-    private fun fetchQuestionDetails() {
+    private fun fetchQuestionDetails(questionId: String) {
         coroutineScope.launch {
             viewDetailMvc.showProgressIndication()
             try {
-                val response = stackoverflowApi.questionDetails(questionId)
-                if (response.isSuccessful && response.body() != null) {
-                    val questionBody = response.body()!!.question.body
-                    viewDetailMvc.updateUI(questionBody)
-                } else {
-                    onFetchFailed()
+                val result = fetchQuestionsUseCase.fetchDetailQuestions(questionId)
+                when(result){
+                    is FetchQuestionsUseCase.ResultDetail.Success ->{
+                        viewDetailMvc.updateUI(result.questionDetail)
+                    }
                 }
-            } catch (t: Throwable) {
-                if (t !is CancellationException) {
-                    onFetchFailed()
-                }
-            } finally {
-                viewDetailMvc.hideProgressIndication()
+            }finally {
+             viewDetailMvc.hideProgressIndication()
             }
-
         }
     }
 
