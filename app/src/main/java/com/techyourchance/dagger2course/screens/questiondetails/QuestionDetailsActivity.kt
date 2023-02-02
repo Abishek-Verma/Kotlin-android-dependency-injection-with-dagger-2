@@ -10,13 +10,14 @@ import com.techyourchance.dagger2course.MyApplication
 import com.techyourchance.dagger2course.networking.StackoverflowApi
 import com.techyourchance.dagger2course.questions.FetchQuestionsUseCase
 import com.techyourchance.dagger2course.screens.common.ScreenNavigator
+import com.techyourchance.dagger2course.screens.common.activities.BaseActivity
 import com.techyourchance.dagger2course.screens.common.dialogs.DialogNavigator
 import com.techyourchance.dagger2course.screens.common.dialogs.ServerErrorDialogFragment
 import kotlinx.coroutines.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.Listener {
+class QuestionDetailsActivity : BaseActivity(), QuestionDetailsViewMvc.Listener {
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -33,7 +34,7 @@ class QuestionDetailsActivity : AppCompatActivity(), QuestionDetailsViewMvc.List
 
         setContentView(viewDetailMvc.rootView)
 
-        fetchQuestionsUseCase = (application as MyApplication).fetchQuestionsUseCase
+        fetchQuestionsUseCase = compositionRoot.fetchQuestionsUseCase
         dialogNavigator = DialogNavigator(supportFragmentManager)
         screenNavigator = ScreenNavigator(this)
 
